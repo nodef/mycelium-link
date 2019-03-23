@@ -1,0 +1,28 @@
+{
+  "name": "@mycelium/link",
+  "version": "0.0.1",
+  "description": "Represents a link for small distributed IoT network.",
+  "main": "index.js",
+  "scripts": {
+    "test": "exit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nodef/mycelium-link.git"
+  },
+  "keywords": [
+    "mycelium",
+    "link",
+    "small",
+    "distributed",
+    "iot",
+    "network",
+    "merferry"
+  ],
+  "author": "wolfram77@gmail.com",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/nodef/mycelium-link/issues"
+  },
+  "homepage": "https://github.com/nodef/mycelium-link#readme"
+}
