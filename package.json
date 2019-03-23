@@ -1,6 +1,6 @@
 {
   "name": "@mycelium/link",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Represents a link for small distributed IoT network.",
   "main": "index.js",
   "scripts": {
@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/nodef/mycelium-link/issues"
   },
-  "homepage": "https://github.com/nodef/mycelium-link#readme"
+  "homepage": "https://github.com/nodef/mycelium-link#readme",
+  "dependencies": {
+    "ws": "^6.2.0"
+  }
 }
