@@ -139,7 +139,7 @@ function HttpRequest() {
   this.url = '/';
 };
 
-function HttpSeverResponse(connection) {
+function HttpResponse(connection) {
   this.onclose = null;
   this.onfinish = null;
   this.connection = connection;
@@ -147,10 +147,25 @@ function HttpSeverResponse(connection) {
   this.headersSent = false;
   this.sendDate = true;
   this.socket = null;
+  this.headers = {};
+  this.httpVersion = '1.1';
+  this.method = 'GET';
   this.statusCode = 404;
   this.statusMessage = 'Not Found';
   this.trailers = {};
-  this.headers = {};
+  this.url = '/';
 };
-HttpSeverResponse.prototype.addTrailers = addTrailers;
-module.exports = HttpSeverResponse;
+HttpResponse.prototype.addTrailers = addTrailers;
+HttpResponse.prototype.end = end;
+HttpResponse.prototype.getHeader = getHeader;
+HttpResponse.prototype.getHeaderNames = getHeaderNames;
+HttpResponse.prototype.getHeaders = getHeaders;
+HttpResponse.prototype.hasHeader = hasHeader;
+HttpResponse.prototype.removeHeader = removeHeader;
+HttpResponse.prototype.setHeader = setHeader;
+HttpResponse.prototype.write = write;
+HttpResponse.prototype.writeContinue = writeContinue;
+HttpResponse.prototype.writeHead = writeHead;
+HttpResponse.prototype.writeProcessing = writeProcessing;
+exports.HttpRequest = HttpRequest;
+exports.HttpResponse = HttpResponse;
