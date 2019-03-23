@@ -20,6 +20,16 @@ function messageStringify(head, body) {
 function Link(address, options) {
   var o = options||{};
   var socket = new WebSocket(address, options);
+  // headers
+  // httpVersion
+  // method
+  // rawHeaders
+  // rawTrailers
+  // statusCode
+  // statusMessage
+  // trailers
+  // url
+  // 
 };
 
 
