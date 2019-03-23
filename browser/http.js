@@ -74,7 +74,9 @@ function writeProcessing() {
 
 
 function HttpRequest() {
-  this.onabort = null;
+  this.type = 'http.request';
+  this.onclose = null;
+  this.onfinish = null;
   this.onconnect = null;
   this.oncontinue = null;
   this.oninformation = null;
@@ -82,25 +84,25 @@ function HttpRequest() {
   this.onsocket = null;
   this.ontimeout = null;
   this.onupgrade = null;
-
-  this.onaborted = null;
-  this.onclose = null;
-  this.aborted = false;
-  this.complete = false;
   this.finished = false;
   this.headers = {};
   this.httpVersion = '1.1';
   this.method = 'GET';
-  this.socket = null;
-  this.statusCode = 404;
-  this.statusMessage = 'Not Found';
+  this.socket = connection.socket;
   this.trailers = {};
   this.maxHeadersCount = 2000;
   this.path = '/';
-  this.url = '/';
 };
+HttpRequest.prototype.end = end;
+HttpRequest.prototype.getHeader = getHeader;
+HttpRequest.prototype.removeHeader = removeHeader;
+HttpRequest.prototype.setHeader = setHeader;
+HttpRequest.prototype.write = write;
+
+
 
 function HttpResponse(connection) {
+  this.type = 'http.response';
   this.onclose = null;
   this.onfinish = null;
   this.connection = connection;
