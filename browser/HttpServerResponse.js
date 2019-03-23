@@ -3,32 +3,16 @@ function addTrailers(headers) {
 };
 
 function end(data, encoding, callback) {
-  var args = Array.from(arguments);
-  var argl = args[args.length-1];
-  callback = typeof argl==='function'? argl:null;
-  if(callback) args[args.length-1] = null;
-  this.write.apply(this, args);
-  this.end(callback);
-  callback = typeof args[args.length-1]==='function'? 
-  if(typeof args[args.length-1]==='function') 
-  if (n===3 || (n===2 && typeof encoding!=='function')) {
+  var n = arguments.length;
+  if(n===3 || (n===2 && typeof encoding!=='function')) {
     this.write(data, encoding);
     return this.end(callback);
   }
-  if(n===2 && typeof encoding!=='function') {
-    this.write(data, encoding);
-    return 
+  if(n===2 || (n===1 && typeof data!=='function')) {
+    this.write(data);
+    return this.end(encoding);
   }
-  if(n===0 || typeof data==='function') {
-    // somehow write to connection here
-    return;
-  }
-  if(n===1) { this.write(data); this.end(); }
-  else if(n===2) {
-    if(typeof encoding==='function') { this.write(data); this.end(encoding); }
-    else { this.write(data, encoding); this.end(); }
-  }
-  else { this.write(data, encoding); this.end(callback); }
+  // somehow write to connection here
 };
 
 function getHeader(name) {
