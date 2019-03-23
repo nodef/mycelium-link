@@ -1,52 +1,3 @@
-function destroy(error) {
-
-};
-
-
-
-function abort() {
-
-};
-
-function end(data, encoding, callback) {
-
-};
-
-function flushHeaders() {
-
-};
-
-function getHeader(name) {
-
-};
-
-function removeHeader(name) {
-
-};
-
-function setHeader(name, value) {
-
-};
-
-function setNoDelay(noDelay) {
-
-};
-
-function setSocketKeepAlive(enable, initialDelay) {
-
-};
-
-function setTimeout(msecs, callback) {
-
-};
-
-function write(chunk, encoding, callback) {
-  
-};
-
-
-
-
 function addTrailers(headers) {
   Object.assign(this.trailers, headers);
 };
@@ -61,7 +12,12 @@ function end(data, encoding, callback) {
     this.write(data);
     return this.end(encoding);
   }
-  // somehow write to connection here
+  var type = this.type+'.end';
+  var trailers = this.trailers;
+  this.connection.write({type, trailers}, null, function() {
+    if(callback) callback();
+    if(this.onfinish) this.onfinish();
+  });
 };
 
 function getHeader(name) {
@@ -88,12 +44,9 @@ function setHeader(name, value) {
   this.headers[name.toLowerCase()] = value;
 };
 
-function setTimeout(msecs, callback) {
-
-};
-
 function write(chunk, encoding, callback) {
-  // somehow write to connection here
+  var type = this.type+'.data';
+  this.connection.write({type}, chunk, callback);
 };
 
 function writeContinue() {
@@ -101,10 +54,12 @@ function writeContinue() {
 };
 
 function writeHead(statusCode, statusMessage, headers) {
+  var type = this.type+'.head';
+  var httpVersion = '1.1';
   this.statusCode = statusCode;
   this.statusMessage = statusMessage;
-  Object.assign(this.headers, headers);
-  // somehow write to connection here
+  headers = Object.assign(this.headers, headers);
+  this.connection.write({type, httpVersion, statusCode, statusMessage, headers});
 };
 
 function writeProcessing() {
@@ -145,15 +100,12 @@ function HttpResponse(connection) {
   this.connection = connection;
   this.finished = false;
   this.headersSent = false;
-  this.sendDate = true;
-  this.socket = null;
   this.headers = {};
-  this.httpVersion = '1.1';
-  this.method = 'GET';
+  this.sendDate = true;
+  this.socket = connection.socket;
   this.statusCode = 404;
   this.statusMessage = 'Not Found';
   this.trailers = {};
-  this.url = '/';
 };
 HttpResponse.prototype.addTrailers = addTrailers;
 HttpResponse.prototype.end = end;
