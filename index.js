@@ -1,7 +1,6 @@
 const WebSocket = require('ws');
 
 
-
 function messageParse(msg) {
   var len = parseInt(msg.substring(0, 8), 16);
   var head = JSON.parse(msg.substring(8, 8+len));

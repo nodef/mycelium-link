@@ -54,12 +54,16 @@ function writeContinue() {
 };
 
 function writeHead(statusCode, statusMessage, headers) {
+  var $this = this;
   var type = this.type+'.head';
   var httpVersion = '1.1';
   this.statusCode = statusCode;
   this.statusMessage = statusMessage;
   headers = Object.assign(this.headers, headers);
-  this.connection.write({type, httpVersion, statusCode, statusMessage, headers});
+  if(!headers.date && this.sendDate) headers.date = (new Date()).toUTCString();
+  this.connection.write({type, httpVersion, statusCode, statusMessage, headers}, null, function() {
+    $this.headersSent = true;
+  });
 };
 
 function writeProcessing() {
