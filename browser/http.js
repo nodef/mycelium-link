@@ -12,9 +12,11 @@ function end(data, encoding, callback) {
     this.write(data);
     return this.end(encoding);
   }
+  var $this = this;
   var type = this.type+'.end';
   var trailers = this.trailers;
   this.connection.write({type, trailers}, null, function() {
+    $this.finished = true;
     if(callback) callback();
     if(this.onfinish) this.onfinish();
   });
