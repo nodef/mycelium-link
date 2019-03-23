@@ -41,7 +41,7 @@ function setTimeout(msecs, callback) {
 };
 
 function write(chunk, encoding, callback) {
-
+  
 };
 
 function HttpRequest() {
