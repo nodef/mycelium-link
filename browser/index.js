@@ -68,7 +68,7 @@ function MyceliumLink(url, protocols) {
 
 function write(head, body, callback) {
   var message = messageStringify(head, body);
-  console.log('write:', message);
+  console.log('write:', messageParse(message));
   if(callback) callback();
 };
 
@@ -82,6 +82,6 @@ var request = _http.request.call(connection);
 request.setHeader('Accept', 'nothing');
 var accept = request.getHeader('accept');
 console.log('accept:', accept);
-// request.flushHeaders();
-// request.write('Hello from ClientRequest!');
+request.flushHeaders();
+request.write('Hello from ClientRequest!');
 request.end('Bye!');
