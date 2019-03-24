@@ -110,8 +110,8 @@ function hasHeader(name) {
 
 
 
-function ClientRequest(connection, options) {
-  var {path} = options;
+function ClientRequest(connection, details) {
+  var {method, path, httpVersion, headers} = details;
   this.onabort = null;
   this.onconnect = null;
   this.oncontinue = null;
@@ -124,9 +124,14 @@ function ClientRequest(connection, options) {
   this.connection = connection;
   this.finished = false;
   this.maxHeadersCount = 2000;
-  this.path = path;
   this.socket = connection.socket;
+  this.method = method;
+  this.path = path;
+  this.httpVersion = httpVersion;
+  this.headers = headers;
+  this.trailers = trailers;
   this.headersSent = false;
+  this.id = Math.random();
 };
 
 
