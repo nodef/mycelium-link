@@ -28,10 +28,31 @@ function MyceliumLink(url, protocols) {
   ws.onclose = (event) => this.onclose? this.onclose(event):null;
   ws.onmessage = (event) => {
     var {head, body} = messageParse(event.data);
-    
+    if(head.type==='http+') {
+      var {id, sequence} = head;
+      var request = new HttpRequest(this, head.request);
+      var response = new HttpResponse(this, id);
+      // response sequence?
+      this.connections.set(id, {sequence, request, response});
+      if(this.onhttp) this.onhttp(request, response);
+      if(body && request.ondata) request.ondata(body);
+    }
+    else if(head.type==='http-') {
+      var {id, sequence} = head;
+      var {request} = this.connections.get(id);
+      if(body && request.ondata) request.ondata(body);
+      if(request.onend) request.onend();
+    }
+    else if(head.type==='httpd') {
+      var {id, sequence} = head;
+      var {request} = this.connections.get(id);
+      if(body && request.ondata) request.ondata(body);
+    }
   };
   this.socket = ws;
+  this.connections = new Map();
   this.onerror = null;
+  this.onhttp = null;
   this.onopen = null;
   this.onclose = null;
   this.onmessage = null;
