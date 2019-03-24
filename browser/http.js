@@ -1,12 +1,3 @@
-function addTrailers(headers) {
-  Object.assign(this.trailers, headers);
-};
-
-function write(chunk, encoding, callback) {
-  var type = this.type+'.data';
-  this.connection.write({type}, chunk, callback);
-};
-
 function writeContinue() {
   this.writeHead(100, 'Continue');
 };
@@ -29,42 +20,46 @@ function writeProcessing() {
 };
 
 
+
+
+
 function abort() {
   this.aborted = true;
   if(this.onabort) this.onabort();
-  return this;
 };
 
-// headersSent?
-function endInternal(callback) {
-  var id = this.id, type = 'http-';
-  var details = {trailers: this.trailers};
-  this.connection.write({id, type, details}, null, () => {
+function writeInternal(head, body, callback) {
+  if(this.aborted || this.finished) return false;
+  this.connection.write(head, body, callback);
+  return this.headersSent = true;
+};
+
+function write(chunk, encoding, callback) {
+  var {id, details} = this;
+  var head = this.headersSent? {id, type: 'httpd'}:{id, type: 'http+', details};
+  return writeInternal.call(this, head, chunk, callback);
+};
+
+function flushHeaders() {
+  if(!this.headersSent) return this.write();
+};
+
+function endInternal(body, callback) {
+  var {id, details, trailers} = this, type = 'http-';
+  details = this.headersSent? {trailers}:Object.assign(details, trailers);
+  writeInternal.call(this, {id, type, details}, body, () => {
     this.finished = true;
     if(callback) callback();
   });
   return this;
 };
 
-// headersSent?
 function end(data, encoding, callback) {
   var n = arguments.length;
-  if(n===3 || (n===2 && typeof encoding!=='function')) {
-    this.write(data, encoding);
-    return endInternal.call(this, callback);
-  }
-  if(n===2 || (n===1 && typeof data!=='function')) {
-    this.write(data);
-    return endInternal.call(this, encoding);
-  }
+  if(n===3 || (n===2 && typeof encoding!=='function')) return endInternal.call(this, data, callback);
+  if(n===2 || (n===1 && typeof data!=='function')) return endInternal.call(this, data, encoding);
   return endInternal.call(this, data);
 };
-
-function flushHeaders() {
-  if(!this.headersSent) this.write();
-  return this;
-};
-
 
 function getHeader(name) {
   return this.headers[name.toLowerCase()];
@@ -78,24 +73,6 @@ function setHeader(name, value) {
   this.headers[name.toLowerCase()] = value;
 };
 
-function write(chunk, encoding, callback) {
-  var id = this.id, type = 'httpd';
-  this.connection.write({id, type}, chunk, callback);
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function getHeaderNames() {
   return Object.keys(this.headers);
 };
@@ -108,9 +85,11 @@ function hasHeader(name) {
   return this.headers[name.toLowerCase()] != null;
 };
 
+function addTrailers(headers) {
+  Object.assign(this.trailers, headers);
+};
 
-
-function ClientRequest(connection, details) {
+function ClientRequest(connection, details, id) {
   var {method, path, httpVersion, headers} = details;
   this.onabort = null;
   this.onconnect = null;
@@ -125,14 +104,25 @@ function ClientRequest(connection, details) {
   this.finished = false;
   this.maxHeadersCount = 2000;
   this.socket = connection.socket;
+  this.details = details;
   this.method = method;
   this.path = path;
   this.httpVersion = httpVersion;
   this.headers = headers;
-  this.trailers = trailers;
+  this.trailers = {};
   this.headersSent = false;
-  this.id = Math.random();
+  this.id = id;
 };
+ClientRequest.prototype.abort = abort;
+ClientRequest.prototype.end = end;
+ClientRequest.prototype.flushHeaders = flushHeaders;
+ClientRequest.prototype.getHeader = getHeader;
+ClientRequest.prototype.removeHeader = removeHeader;
+ClientRequest.prototype.setHeader = setHeader;
+ClientRequest.prototype.write = write;
+
+
+
 
 
 function HttpRequest() {
@@ -205,10 +195,8 @@ function requestDetails(options) {
 };
 
 function requestInternal(options, callback) {
-  var id = Math.random(), type = 'http+';
   var details = requestDetails(options);
-  this.sendMessage({id, type, details});
-  var request = new ClientRequest(this, id);
+  var request = new ClientRequest(this, details, Math.random());
   if(callback) request.onresponse = callback;
   return request;
 };
@@ -229,5 +217,6 @@ function get(url, options, callback) {
 // createServer() : simulate a http server
 // onhttp now handles all requests
 
+exports.ClientRequest = ClientRequest;
 exports.HttpRequest = HttpRequest;
 exports.HttpResponse = HttpResponse;
