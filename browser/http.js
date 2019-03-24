@@ -99,9 +99,11 @@ function abort() {
 };
 
 function writeInternal(head, body, callback) {
+  var {id, type} = head;
   if(this.aborted || this.finished) return false;
   if(this.sendDate) this.headers['date'] = (new Date()).toUTCString();
   this.connection.write(head, body, callback);
+  if(type==='http-') this.connection.end(id);
   return this.headersSent = true;
 };
 
@@ -130,9 +132,9 @@ function flushHeaders() {
 };
 
 function endInternal(body, callback) {
-  var {id, details, trailers} = this, type = 'http-';
-  details = this.headersSent? {trailers}:Object.assign(details, trailers);
-  writeInternal.call(this, {id, type, details}, body, () => {
+  var {id, details, trailers} = this;
+  if(!this.headersSent) writeInternal.call(this, {id, type: 'http+', details});
+  writeInternal.call(this, {id, type: 'http-', details: {trailers}}, body, () => {
     this.finished = true;
     if(callback) callback();
   });
