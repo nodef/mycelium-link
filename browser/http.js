@@ -2,50 +2,6 @@ function addTrailers(headers) {
   Object.assign(this.trailers, headers);
 };
 
-function end(data, encoding, callback) {
-  var n = arguments.length;
-  if(n===3 || (n===2 && typeof encoding!=='function')) {
-    this.write(data, encoding);
-    return this.end(callback);
-  }
-  if(n===2 || (n===1 && typeof data!=='function')) {
-    this.write(data);
-    return this.end(encoding);
-  }
-  var $this = this;
-  var type = this.type+'.end';
-  var trailers = this.trailers;
-  this.connection.write({type, trailers}, null, function() {
-    $this.finished = true;
-    if(callback) callback();
-    if(this.onfinish) this.onfinish();
-  });
-};
-
-function getHeader(name) {
-  return this.headers[name.toLowerCase()];
-};
-
-function getHeaderNames() {
-  return Object.keys(this.headers);
-};
-
-function getHeaders() {
-  return this.headers;
-};
-
-function hasHeader(name) {
-  return this.headers[name.toLowerCase()] != null;
-};
-
-function removeHeader(name) {
-  this.headers[name.toLowerCase()] = null;
-};
-
-function setHeader(name, value) {
-  this.headers[name.toLowerCase()] = value;
-};
-
 function write(chunk, encoding, callback) {
   var type = this.type+'.data';
   this.connection.write({type}, chunk, callback);
@@ -70,6 +26,107 @@ function writeHead(statusCode, statusMessage, headers) {
 
 function writeProcessing() {
   this.writeHead(102, 'Processing');
+};
+
+
+function abort() {
+  this.aborted = true;
+  if(this.onabort) this.onabort();
+  return this;
+};
+
+// headersSent?
+function endInternal(callback) {
+  var id = this.id, type = 'http-';
+  var details = {trailers: this.trailers};
+  this.connection.write({id, type, details}, null, () => {
+    this.finished = true;
+    if(callback) callback();
+  });
+  return this;
+};
+
+// headersSent?
+function end(data, encoding, callback) {
+  var n = arguments.length;
+  if(n===3 || (n===2 && typeof encoding!=='function')) {
+    this.write(data, encoding);
+    return endInternal.call(this, callback);
+  }
+  if(n===2 || (n===1 && typeof data!=='function')) {
+    this.write(data);
+    return endInternal.call(this, encoding);
+  }
+  return endInternal.call(this, data);
+};
+
+function flushHeaders() {
+  if(!this.headersSent) this.write();
+  return this;
+};
+
+
+function getHeader(name) {
+  return this.headers[name.toLowerCase()];
+};
+
+function removeHeader(name) {
+  this.headers[name.toLowerCase()] = null;
+};
+
+function setHeader(name, value) {
+  this.headers[name.toLowerCase()] = value;
+};
+
+function write(chunk, encoding, callback) {
+  var id = this.id, type = 'httpd';
+  this.connection.write({id, type}, chunk, callback);
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function getHeaderNames() {
+  return Object.keys(this.headers);
+};
+
+function getHeaders() {
+  return this.headers;
+};
+
+function hasHeader(name) {
+  return this.headers[name.toLowerCase()] != null;
+};
+
+
+
+function ClientRequest(connection, options) {
+  var {path} = options;
+  this.onabort = null;
+  this.onconnect = null;
+  this.oncontinue = null;
+  this.oninformation = null;
+  this.onresponse = null;
+  this.onsocket = null;
+  this.ontimeout = null;
+  this.onupgrade = null;
+  this.aborted = false;
+  this.connection = connection;
+  this.finished = false;
+  this.maxHeadersCount = 2000;
+  this.path = path;
+  this.socket = connection.socket;
+  this.headersSent = false;
 };
 
 
@@ -158,9 +215,14 @@ function request(url, options, callback) {
   var {protocol, host, port} = a;
   var path = a.pathname+a.search+a.hash;
   options = Object.assign({protocol, host, port, path}, options);
-  return requestInternal(options, callback);
+  return requestInternal.call(this, options, callback);
 };
 
+function get(url, options, callback) {
+  return request(url, options, callback).end();
+};
+// createServer() : simulate a http server
+// onhttp now handles all requests
 
 exports.HttpRequest = HttpRequest;
 exports.HttpResponse = HttpResponse;
