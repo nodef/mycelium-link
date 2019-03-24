@@ -21,6 +21,21 @@ function HttpServerResponse(id) {
 };
 
 
+function MyceliumLink(url, protocols) {
+  var ws = new WebSocket(url, protocols);
+  ws.onerror = (event) => this.onerror? this.onerror(event):null;
+  ws.onopen = (event) => this.onopen? this.onopen(event):null;
+  ws.onclose = (event) => this.onclose? this.onclose(event):null;
+  ws.onmessage = (event) => {
+    var {head, body} = messageParse(event.data);
+    
+  };
+  this.socket = ws;
+  this.onerror = null;
+  this.onopen = null;
+  this.onclose = null;
+  this.onmessage = null;
+};
 
 var link = {};
 var handlers = new Map();
