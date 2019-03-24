@@ -16,10 +16,26 @@ function messageStringify(head, body) {
 };
 
 
-function HttpServerResponse(id) {
 
+function httpOptions(options) {
+  var o = options||{};
+  var method = o.method||'GET';
+  var path = o.path||'/';
+  var httpVersion = '1.1';
+  var headers = o.headers||{};
+  headers['host'] = (o.hostname||o.host||'localhost')+(o.port? ':'+o.port:'');
+  if(o.auth) headers['authorization'] = 'Basic '+btoa(o.auth);
+  return {method, path, httpVersion, headers};
 };
 
+function httpInternal(options, callback) {
+  var top = httpOptions(options);
+  var id = this.id+(this.sent++);
+};
+
+function http(url, options, callback) {
+
+};
 
 function MyceliumLink(url, protocols) {
   var ws = new WebSocket(url, protocols);
@@ -56,23 +72,4 @@ function MyceliumLink(url, protocols) {
   this.onopen = null;
   this.onclose = null;
   this.onmessage = null;
-};
-
-var link = {};
-var handlers = new Map();
-var socket = new WebSocket('http://mycelium.com');
-socket.onmessage = function(event) {
-  var {head, body} = messageParse(event.data);
-  if(head.type==='http.request') {
-    handlers.set(head.id, head.request);
-    link.onhttprequest(head.request, response={});
-  }
-  else if(head.type==='http.data') {
-    req = handlers.get(head.id);
-    req.ondata(body);
-  }
-  else if(head.type==='http.end') {
-    req = handlers.get(head.id);
-    req.onend();
-  }
 };
