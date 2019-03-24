@@ -127,5 +127,40 @@ HttpResponse.prototype.write = write;
 HttpResponse.prototype.writeContinue = writeContinue;
 HttpResponse.prototype.writeHead = writeHead;
 HttpResponse.prototype.writeProcessing = writeProcessing;
+
+
+
+
+function requestDetails(options) {
+  var o = options||{};
+  var method = o.method||'GET';
+  var path = o.path||'/';
+  var httpVersion = '1.1';
+  var headers = o.headers||{};
+  headers['host'] = (o.hostname||o.host||'localhost')+(o.port? ':'+o.port:'');
+  if(o.auth) headers['authorization'] = 'Basic '+btoa(o.auth);
+  return {method, path, httpVersion, headers};
+};
+
+function requestInternal(options, callback) {
+  var id = Math.random(), type = 'http+';
+  var details = requestDetails(options);
+  this.sendMessage({id, type, details});
+  var request = new ClientRequest(this, id);
+  if(callback) request.onresponse = callback;
+  return request;
+};
+
+function request(url, options, callback) {
+  if(typeof url!=='string') return requestInternal(url, options);
+  var a = document.createElement('a');
+  a.href = url;
+  var {protocol, host, port} = a;
+  var path = a.pathname+a.search+a.hash;
+  options = Object.assign({protocol, host, port, path}, options);
+  return requestInternal(options, callback);
+};
+
+
 exports.HttpRequest = HttpRequest;
 exports.HttpResponse = HttpResponse;

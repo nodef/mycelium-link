@@ -1,5 +1,4 @@
-const HttpServerResp = require('./browser/httpserverresponse');
-var res = HttpServerResp(null);
+const http = require('./http');
 
 
 function messageParse(msg) {
@@ -17,20 +16,11 @@ function messageStringify(head, body) {
 
 
 
-function httpOptions(options) {
-  var o = options||{};
-  var method = o.method||'GET';
-  var path = o.path||'/';
-  var httpVersion = '1.1';
-  var headers = o.headers||{};
-  headers['host'] = (o.hostname||o.host||'localhost')+(o.port? ':'+o.port:'');
-  if(o.auth) headers['authorization'] = 'Basic '+btoa(o.auth);
-  return {method, path, httpVersion, headers};
-};
 
 function httpInternal(options, callback) {
-  var top = httpOptions(options);
+  var details = httpDetails(options);
   var id = this.id+(this.sent++);
+
 };
 
 function http(url, options, callback) {
