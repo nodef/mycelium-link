@@ -1,3 +1,65 @@
+// reference: https://github.com/substack/http-browserify/blob/master/index.js
+const STATUS_CODES = {
+  100 : 'Continue',
+  101 : 'Switching Protocols',
+  102 : 'Processing',                 // RFC 2518, obsoleted by RFC 4918
+  200 : 'OK',
+  201 : 'Created',
+  202 : 'Accepted',
+  203 : 'Non-Authoritative Information',
+  204 : 'No Content',
+  205 : 'Reset Content',
+  206 : 'Partial Content',
+  207 : 'Multi-Status',               // RFC 4918
+  300 : 'Multiple Choices',
+  301 : 'Moved Permanently',
+  302 : 'Moved Temporarily',
+  303 : 'See Other',
+  304 : 'Not Modified',
+  305 : 'Use Proxy',
+  307 : 'Temporary Redirect',
+  400 : 'Bad Request',
+  401 : 'Unauthorized',
+  402 : 'Payment Required',
+  403 : 'Forbidden',
+  404 : 'Not Found',
+  405 : 'Method Not Allowed',
+  406 : 'Not Acceptable',
+  407 : 'Proxy Authentication Required',
+  408 : 'Request Time-out',
+  409 : 'Conflict',
+  410 : 'Gone',
+  411 : 'Length Required',
+  412 : 'Precondition Failed',
+  413 : 'Request Entity Too Large',
+  414 : 'Request-URI Too Large',
+  415 : 'Unsupported Media Type',
+  416 : 'Requested Range Not Satisfiable',
+  417 : 'Expectation Failed',
+  418 : 'I\'m a teapot',              // RFC 2324
+  422 : 'Unprocessable Entity',       // RFC 4918
+  423 : 'Locked',                     // RFC 4918
+  424 : 'Failed Dependency',          // RFC 4918
+  425 : 'Unordered Collection',       // RFC 4918
+  426 : 'Upgrade Required',           // RFC 2817
+  428 : 'Precondition Required',      // RFC 6585
+  429 : 'Too Many Requests',          // RFC 6585
+  431 : 'Request Header Fields Too Large',// RFC 6585
+  500 : 'Internal Server Error',
+  501 : 'Not Implemented',
+  502 : 'Bad Gateway',
+  503 : 'Service Unavailable',
+  504 : 'Gateway Time-out',
+  505 : 'HTTP Version Not Supported',
+  506 : 'Variant Also Negotiates',    // RFC 2295
+  507 : 'Insufficient Storage',       // RFC 4918
+  509 : 'Bandwidth Limit Exceeded',
+  510 : 'Not Extended',               // RFC 2774
+  511 : 'Network Authentication Required' // RFC 6585
+};
+
+
+
 function requestDetails(options) {
   var o = options||{};
   var method = o.method||'GET';
@@ -13,10 +75,23 @@ function responseDetails(options) {
   var o = options||{};
   var httpVersion = o.httpVersion||'1.1';
   var statusCode = o.statusCode||404;
-  var statusMessage = o.statusMessage||'Not Found';
+  var statusMessage = o.statusMessage||STATUS_CODES[statusCode];
   var headers = o.headers||{};
   return {httpVersion, statusCode, statusMessage, headers};
 };
+
+function incomingDetails(options) {
+  var o = options||{};
+  var httpVersion = o.httpVersion||'1.1';
+  var method = o.method||null;
+  var statusCode = o.statusCode||0;
+  var statusMessage = statusCode? o.statusMessage||STATUS_CODES[statusCode]:null;
+  var path = o.path||'/';
+  var headers = o.headers||{};
+  return {httpVersion, method, statusCode, statusMessage, path, headers};
+};
+
+
 
 function abort() {
   this.aborted = true;
@@ -38,7 +113,7 @@ function write(chunk, encoding, callback) {
 
 function writeHead(statusCode, statusMessage, headers) {
   this.statusCode = statusCode;
-  this.statusMessage = statusMessage;
+  this.statusMessage = statusMessage||STATUS_CODES[statusCode];
   Object.assign(this.headers, headers);
 };
 
@@ -114,15 +189,15 @@ function ClientRequest(connection, options, id) {
   this.ontimeout = null;
   this.onupgrade = null;
   this.aborted = false;
-  this.connection = connection;
   this.finished = false;
   this.maxHeadersCount = 2000;
+  this.connection = connection;
   this.socket = connection.socket;
-  this.details = details||{};
-  this.method = method||'GET';
-  this.path = path||'/';
-  this.httpVersion = httpVersion||'1.1';
-  this.headers = headers||{};
+  this.details = details;
+  this.method = method;
+  this.path = path;
+  this.httpVersion = httpVersion;
+  this.headers = headers;
   this.trailers = {};
   this.headersSent = false;
   this.id = id;
@@ -142,16 +217,16 @@ function ServerResponse(connection, options, id) {
   var {httpVersion, statusCode, statusMessage, headers} = details;
   this.onclose = null;
   this.onfinish = null;
-  this.connection = connection;
   this.finished = false;
   this.headersSent = false;
   this.sendDate = true;
+  this.connection = connection;
   this.socket = connection.socket;
-  this.details = details||{};
-  this.httpVersion = httpVersion||'1.1';
-  this.statusCode = statusCode||404;
-  this.statusMessage = statusMessage||'Not Found';
-  this.headers = headers||{};
+  this.details = details;
+  this.httpVersion = httpVersion;
+  this.statusCode = statusCode;
+  this.statusMessage = statusMessage;
+  this.headers = headers;
   this.trailers = {};
   this.id = id;
 };
@@ -170,69 +245,28 @@ ServerResponse.prototype.writeProcessing = writeProcessing;
 
 
 
-function IncomingMessage(connection, details, id) {
+function IncomingMessage(connection, options, id) {
+  var details = incomingDetails(options);
+  var {httpVersion, method, statusCode, statusMessage, path, headers} = details;
   this.onaborted = null;
   this.onclose = null;
+  this.ondata = null;
+  this.onend = null;
   this.aborted = false;
   this.complete = false;
-};
-
-
-function HttpRequest() {
-  this.type = 'http.request';
-  this.onclose = null;
-  this.onfinish = null;
-  this.onconnect = null;
-  this.oncontinue = null;
-  this.oninformation = null;
-  this.onresponse = null;
-  this.onsocket = null;
-  this.ontimeout = null;
-  this.onupgrade = null;
-  this.finished = false;
-  this.headers = {};
-  this.httpVersion = '1.1';
-  this.method = 'GET';
-  this.socket = connection.socket;
-  this.trailers = {};
-  this.maxHeadersCount = 2000;
-  this.path = '/';
-};
-HttpRequest.prototype.end = end;
-HttpRequest.prototype.getHeader = getHeader;
-HttpRequest.prototype.removeHeader = removeHeader;
-HttpRequest.prototype.setHeader = setHeader;
-HttpRequest.prototype.write = write;
-
-
-
-function HttpResponse(connection) {
-  this.type = 'http.response';
-  this.onclose = null;
-  this.onfinish = null;
   this.connection = connection;
-  this.finished = false;
-  this.headersSent = false;
-  this.headers = {};
-  this.sendDate = true;
   this.socket = connection.socket;
-  this.statusCode = 404;
-  this.statusMessage = 'Not Found';
+  this.details = details;
+  this.httpVersion = httpVersion;
+  this.method = method;
+  this.statusCode = statusCode;
+  this.statusMessage = statusMessage;
+  this.path = path;
+  this.url = path;
+  this.headers = headers;
   this.trailers = {};
+  this.id = id;
 };
-HttpResponse.prototype.addTrailers = addTrailers;
-HttpResponse.prototype.end = end;
-HttpResponse.prototype.getHeader = getHeader;
-HttpResponse.prototype.getHeaderNames = getHeaderNames;
-HttpResponse.prototype.getHeaders = getHeaders;
-HttpResponse.prototype.hasHeader = hasHeader;
-HttpResponse.prototype.removeHeader = removeHeader;
-HttpResponse.prototype.setHeader = setHeader;
-HttpResponse.prototype.write = write;
-HttpResponse.prototype.writeContinue = writeContinue;
-HttpResponse.prototype.writeHead = writeHead;
-HttpResponse.prototype.writeProcessing = writeProcessing;
-
 
 
 
@@ -260,5 +294,6 @@ function get(url, options, callback) {
 
 exports.ClientRequest = ClientRequest;
 exports.ServerResponse = ServerResponse;
-exports.HttpResponse = HttpResponse;
+exports.IncomingMessage = IncomingMessage;
 exports.request = request;
+exports.get = get;
