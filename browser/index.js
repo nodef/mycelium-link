@@ -68,7 +68,7 @@ function MyceliumLink(url, protocols) {
 
 function write(head, body, callback) {
   var message = messageStringify(head, body);
-  console.log('write:', messageParse(message));
+  console.log('write:', message);
   if(callback) callback();
 };
 
@@ -78,10 +78,10 @@ function BadConnection() {
 BadConnection.prototype.write = write;
 
 var connection = new BadConnection();
-var request = _http.request.call(connection);
-request.setHeader('Accept', 'nothing');
-var accept = request.getHeader('accept');
+var response = new _http.ServerResponse(connection, {}, Math.random());
+response.setHeader('Accept', 'nothing');
+var accept = response.getHeader('accept');
 console.log('accept:', accept);
-request.flushHeaders();
-request.write('Hello from ClientRequest!');
-request.end('Bye!');
+// response.flushHeaders();
+response.write('Hello from ServerResponse!');
+response.end('Bye!');

@@ -79,6 +79,8 @@ function addTrailers(headers) {
   Object.assign(this.trailers, headers);
 };
 
+
+
 // what about onresponse?
 function ClientRequest(connection, details, id) {
   var {method, path, httpVersion, headers} = details;
@@ -114,7 +116,8 @@ ClientRequest.prototype.write = write;
 
 
 
-function ServerResponse(connection, details, id) {
+function ServerResponse(connection, options, id) {
+  var details = responseDetails(options);
   var {httpVersion, statusCode, statusMessage, headers} = details;
   this.onclose = null;
   this.onfinish = null;
@@ -127,7 +130,7 @@ function ServerResponse(connection, details, id) {
   this.httpVersion = httpVersion||'1.1';
   this.statusCode = statusCode||404;
   this.statusMessage = statusMessage||'Not Found';
-  this.headers = headers;
+  this.headers = headers||{};
   this.trailers = {};
   this.id = id;
 };
@@ -146,6 +149,12 @@ ServerResponse.prototype.writeProcessing = writeProcessing;
 
 
 
+function IncomingMessage(connection, details, id) {
+  this.onaborted = null;
+  this.onclose = null;
+  this.aborted = false;
+  this.complete = false;
+};
 
 
 function HttpRequest() {
@@ -217,6 +226,15 @@ function requestDetails(options) {
   return {method, path, httpVersion, headers};
 };
 
+function responseDetails(options) {
+  var o = options||{};
+  var httpVersion = o.httpVersion||'1.1';
+  var statusCode = o.statusCode||404;
+  var statusMessage = o.statusMessage||'Not Found';
+  var headers = o.headers||{};
+  return {httpVersion, statusCode, statusMessage, headers};
+};
+
 function requestInternal(options, callback) {
   var details = requestDetails(options);
   var request = new ClientRequest(this, details, Math.random());
@@ -241,6 +259,6 @@ function get(url, options, callback) {
 // onhttp now handles all requests
 
 exports.ClientRequest = ClientRequest;
-exports.HttpRequest = HttpRequest;
+exports.ServerResponse = ServerResponse;
 exports.HttpResponse = HttpResponse;
 exports.request = request;
