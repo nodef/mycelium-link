@@ -89,6 +89,7 @@ function addTrailers(headers) {
   Object.assign(this.trailers, headers);
 };
 
+// what about onresponse?
 function ClientRequest(connection, details, id) {
   var {method, path, httpVersion, headers} = details;
   this.onabort = null;
