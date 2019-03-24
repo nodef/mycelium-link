@@ -1,3 +1,23 @@
+function requestDetails(options) {
+  var o = options||{};
+  var method = o.method||'GET';
+  var path = o.path||'/';
+  var httpVersion = '1.1';
+  var headers = o.headers||{};
+  headers['host'] = (o.hostname||o.host||'localhost')+(o.port? ':'+o.port:'');
+  if(o.auth) headers['authorization'] = 'Basic '+btoa(o.auth);
+  return {method, path, httpVersion, headers};
+};
+
+function responseDetails(options) {
+  var o = options||{};
+  var httpVersion = o.httpVersion||'1.1';
+  var statusCode = o.statusCode||404;
+  var statusMessage = o.statusMessage||'Not Found';
+  var headers = o.headers||{};
+  return {httpVersion, statusCode, statusMessage, headers};
+};
+
 function abort() {
   this.aborted = true;
   if(this.onabort) this.onabort();
@@ -82,7 +102,8 @@ function addTrailers(headers) {
 
 
 // what about onresponse?
-function ClientRequest(connection, details, id) {
+function ClientRequest(connection, options, id) {
+  var details = requestDetails(options);
   var {method, path, httpVersion, headers} = details;
   this.onabort = null;
   this.onconnect = null;
@@ -215,29 +236,8 @@ HttpResponse.prototype.writeProcessing = writeProcessing;
 
 
 
-function requestDetails(options) {
-  var o = options||{};
-  var method = o.method||'GET';
-  var path = o.path||'/';
-  var httpVersion = '1.1';
-  var headers = o.headers||{};
-  headers['host'] = (o.hostname||o.host||'localhost')+(o.port? ':'+o.port:'');
-  if(o.auth) headers['authorization'] = 'Basic '+btoa(o.auth);
-  return {method, path, httpVersion, headers};
-};
-
-function responseDetails(options) {
-  var o = options||{};
-  var httpVersion = o.httpVersion||'1.1';
-  var statusCode = o.statusCode||404;
-  var statusMessage = o.statusMessage||'Not Found';
-  var headers = o.headers||{};
-  return {httpVersion, statusCode, statusMessage, headers};
-};
-
 function requestInternal(options, callback) {
-  var details = requestDetails(options);
-  var request = new ClientRequest(this, details, Math.random());
+  var request = new ClientRequest(this, options, Math.random());
   if(callback) request.onresponse = callback;
   return request;
 };
