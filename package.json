@@ -1,6 +1,6 @@
 {
   "name": "@mycelium/link",
-  "version": "0.0.22",
+  "version": "0.0.24",
   "description": "Represents a link for small distributed IoT network.",
   "main": "index.js",
   "scripts": {

@@ -1,4 +1,4 @@
-const http = require('./http');
+const _http = require('./http');
 
 
 function messageParse(msg) {
@@ -11,7 +11,7 @@ function messageParse(msg) {
 function messageStringify(head, body) {
   var headStr = JSON.stringify(head);
   var lenStr = headStr.length.toString(16).padStart(8, '0');
-  return lenStr+headStr+body;
+  return lenStr+headStr+(body||'');
 };
 
 
@@ -63,3 +63,25 @@ function MyceliumLink(url, protocols) {
   this.onclose = null;
   this.onmessage = null;
 };
+
+
+
+function write(head, body, callback) {
+  var message = messageStringify(head, body);
+  console.log('write:', message);
+  if(callback) callback();
+};
+
+function BadConnection() {
+  this.socket = null;
+};
+BadConnection.prototype.write = write;
+
+var connection = new BadConnection();
+var request = _http.request.call(connection);
+request.setHeader('Accept', 'nothing');
+var accept = request.getHeader('accept');
+console.log('accept:', accept);
+request.flushHeaders();
+request.write('Hello from ClientRequest!');
+request.end('Bye!');

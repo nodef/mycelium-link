@@ -202,7 +202,7 @@ function requestInternal(options, callback) {
 };
 
 function request(url, options, callback) {
-  if(typeof url!=='string') return requestInternal(url, options);
+  if(typeof url!=='string') return requestInternal.call(this, url, options);
   var a = document.createElement('a');
   a.href = url;
   var {protocol, host, port} = a;
@@ -220,3 +220,4 @@ function get(url, options, callback) {
 exports.ClientRequest = ClientRequest;
 exports.HttpRequest = HttpRequest;
 exports.HttpResponse = HttpResponse;
+exports.request = request;
