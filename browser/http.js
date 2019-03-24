@@ -1,28 +1,3 @@
-function writeContinue() {
-  this.writeHead(100, 'Continue');
-};
-
-function writeHead(statusCode, statusMessage, headers) {
-  var $this = this;
-  var type = this.type+'.head';
-  var httpVersion = '1.1';
-  this.statusCode = statusCode;
-  this.statusMessage = statusMessage;
-  headers = Object.assign(this.headers, headers);
-  if(!headers.date && this.sendDate) headers.date = (new Date()).toUTCString();
-  this.connection.write({type, httpVersion, statusCode, statusMessage, headers}, null, function() {
-    $this.headersSent = true;
-  });
-};
-
-function writeProcessing() {
-  this.writeHead(102, 'Processing');
-};
-
-
-
-
-
 function abort() {
   this.aborted = true;
   if(this.onabort) this.onabort();
@@ -30,6 +5,7 @@ function abort() {
 
 function writeInternal(head, body, callback) {
   if(this.aborted || this.finished) return false;
+  if(this.sendDate) this.headers['date'] = (new Date()).toUTCString();
   this.connection.write(head, body, callback);
   return this.headersSent = true;
 };
@@ -38,6 +14,20 @@ function write(chunk, encoding, callback) {
   var {id, details} = this;
   var head = this.headersSent? {id, type: 'httpd'}:{id, type: 'http+', details};
   return writeInternal.call(this, head, chunk, callback);
+};
+
+function writeHead(statusCode, statusMessage, headers) {
+  this.statusCode = statusCode;
+  this.statusMessage = statusMessage;
+  Object.assign(this.headers, headers);
+};
+
+function writeContinue() {
+  this.writeHead(100, 'Continue');
+};
+
+function writeProcessing() {
+  this.writeHead(102, 'Processing');
 };
 
 function flushHeaders() {
@@ -105,11 +95,11 @@ function ClientRequest(connection, details, id) {
   this.finished = false;
   this.maxHeadersCount = 2000;
   this.socket = connection.socket;
-  this.details = details;
-  this.method = method;
-  this.path = path;
-  this.httpVersion = httpVersion;
-  this.headers = headers;
+  this.details = details||{};
+  this.method = method||'GET';
+  this.path = path||'/';
+  this.httpVersion = httpVersion||'1.1';
+  this.headers = headers||{};
   this.trailers = {};
   this.headersSent = false;
   this.id = id;
@@ -121,6 +111,38 @@ ClientRequest.prototype.getHeader = getHeader;
 ClientRequest.prototype.removeHeader = removeHeader;
 ClientRequest.prototype.setHeader = setHeader;
 ClientRequest.prototype.write = write;
+
+
+
+function ServerResponse(connection, details, id) {
+  var {httpVersion, statusCode, statusMessage, headers} = details;
+  this.onclose = null;
+  this.onfinish = null;
+  this.connection = connection;
+  this.finished = false;
+  this.headersSent = false;
+  this.sendDate = true;
+  this.socket = connection.socket;
+  this.details = details||{};
+  this.httpVersion = httpVersion||'1.1';
+  this.statusCode = statusCode||404;
+  this.statusMessage = statusMessage||'Not Found';
+  this.headers = headers;
+  this.trailers = {};
+  this.id = id;
+};
+ServerResponse.prototype.addTrailers = addTrailers;
+ServerResponse.prototype.end = end;
+ServerResponse.prototype.getHeader = getHeader;
+ServerResponse.prototype.getHeaderNames = getHeaderNames;
+ServerResponse.prototype.getHeaders = getHeaders;
+ServerResponse.prototype.hasHeader = hasHeader;
+ServerResponse.prototype.removeHeader = removeHeader;
+ServerResponse.prototype.setHeader = setHeader;
+ServerResponse.prototype.write = write;
+ServerResponse.prototype.writeContinue = writeContinue;
+ServerResponse.prototype.writeHead = writeHead;
+ServerResponse.prototype.writeProcessing = writeProcessing;
 
 
 
