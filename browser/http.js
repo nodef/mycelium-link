@@ -216,6 +216,7 @@ ClientRequest.prototype.write = write;
 
 function ServerResponse(connection, options, id) {
   EventEmitter.call(this);
+  connection.on('close', () => this.emit('close'));
   var details = responseDetails(options);
   var {httpVersion, statusCode, statusMessage, headers} = details;
   this.finished = false;
@@ -249,9 +250,9 @@ ServerResponse.prototype.writeProcessing = writeProcessing;
 
 function IncomingMessage(connection, options, id) {
   var details = incomingDetails(options);
+  connection.on('close', () => this.emit('close'));
   var {httpVersion, method, statusCode, statusMessage, path, headers} = details;
-  this.onaborted = null;
-  this.onclose = null;
+  // this.onaborted = null; do what?
   this.ondata = null;
   this.onend = null;
   this.aborted = false;
