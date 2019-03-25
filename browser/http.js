@@ -253,10 +253,8 @@ function IncomingMessage(connection, options, id) {
   connection.on('close', () => this.emit('close'));
   var {httpVersion, method, statusCode, statusMessage, path, headers} = details;
   // this.onaborted = null; do what?
-  this.ondata = null;
-  this.onend = null;
   this.aborted = false;
-  this.complete = false;
+  this.complete = false; // NOTE: on end
   this.connection = connection;
   this.socket = connection.socket;
   this.details = details;
