@@ -135,10 +135,7 @@ function flushHeaders() {
 function endInternal(body, callback) {
   var {id, details, trailers} = this;
   if(!this.headersSent) writeInternal.call(this, {id, type: 'http+', details});
-  writeInternal.call(this, {id, type: 'http-', details: {trailers}}, body, () => {
-    this.finished = true;
-    if(callback) callback();
-  });
+  writeInternal.call(this, {id, type: 'http-', details: {trailers}}, body, callback);
   return this;
 };
 
