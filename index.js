@@ -1,3 +1,4 @@
+const WebSocket = WebSocket||require('ws');
 const EventEmitter = require('events');
 const myhttp = require('./http');
 
@@ -15,6 +16,7 @@ function messageStringify(head, body) {
   var lenStr = headStr.length.toString(16).padStart(8, '0');
   return lenStr+headStr+(body||'');
 };
+
 
 
 function onHttpResponse(head, body) {
@@ -89,6 +91,7 @@ MyceliumLink.prototype.http = http;
 
 
 
+/* TEST */
 function write(head, body, callback) {
   var message = messageStringify(head, body);
   console.log('write:', message);
