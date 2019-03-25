@@ -271,24 +271,24 @@ function IncomingMessage(connection, options, id) {
 
 
 
-function requestInternal(options, callback) {
-  var request = new ClientRequest(this, options, Math.random());
+function requestInternal(connection, options, callback) {
+  var request = new ClientRequest(connection, options, Math.random());
   if(callback) request.onresponse = callback;
   return request;
 };
 
-function request(url, options, callback) {
-  if(typeof url!=='string') return requestInternal.call(this, url, options);
+function request(connection, url, options, callback) {
+  if(typeof url!=='string') return requestInternal(connection, url, options);
   var a = document.createElement('a');
   a.href = url;
   var {protocol, host, port} = a;
   var path = a.pathname+a.search+a.hash;
   options = Object.assign({protocol, host, port, path}, options);
-  return requestInternal.call(this, options, callback);
+  return requestInternal(connection, options, callback);
 };
 
-function get(url, options, callback) {
-  return request(url, options, callback).end();
+function get(connection, url, options, callback) {
+  return request(connection, url, options, callback).end();
 };
 // createServer() : simulate a http server
 // onhttp now handles all requests
