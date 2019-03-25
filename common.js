@@ -31,13 +31,13 @@ function onHttpRequest(head, body) {
     var request = new myhttp.IncomingMessage(this, details, id);
     var response = new myhttp.ServerResponse(this, details, id);
     this.streams.set(id, {request, response});
-    if(this.onhttp) this.onhttp(request, response);
+    this.emit('http', request, response);
   }
   else {
     var {request, response} = this.streams.get(id);
   }
-  if(body && request.ondata) request.ondata(body);
-  if(type==='http-' && request.onend) request.onend();
+  if(body) request.on('data', body);
+  if(type==='http-') request.on('end');
 };
 
 function onHttp(head, body) {
