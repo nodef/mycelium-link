@@ -10,7 +10,8 @@ function onHttpResponse(head, body) {
   var {request, response} = stream;
   if(type==='http+') {
     response = stream.response = new myhttp.IncomingMessage(this, details, id);
-    if(request.onresponse) request.onresponse(response);
+    request.emit('response', response);
+    if()
   }
   if(body && response.ondata) response.ondata(body);
   if(type==='http-') {
