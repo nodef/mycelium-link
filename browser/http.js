@@ -185,13 +185,10 @@ function ClientRequest(connection, options, id) {
   EventEmitter.call(this);
   var details = requestDetails(options);
   var {method, path, httpVersion, headers} = details;
-  this.onabort = null;
   this.onconnect = null;
   this.oncontinue = null;
   this.oninformation = null;
   this.onresponse = null;
-  this.onsocket = null;
-  this.ontimeout = null;
   this.onupgrade = null;
   this.aborted = false;
   this.finished = false;
