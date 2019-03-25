@@ -95,7 +95,7 @@ function incomingDetails(options) {
 
 function abort() {
   this.aborted = true;
-  if(this.onabort) this.onabort();
+  this.emit('abort');
 };
 
 function writeInternal(head, body, callback) {
@@ -103,7 +103,7 @@ function writeInternal(head, body, callback) {
   if(this.aborted || this.finished) return false;
   if(this.sendDate) this.headers['date'] = (new Date()).toUTCString();
   this.connection.write(head, body, callback);
-  if(type==='http-') this.connection.end(id);
+  if(type==='http-') { this.connection.end(id); this.finished = true; }
   return this.headersSent = true;
 };
 
