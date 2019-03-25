@@ -1,3 +1,4 @@
+const EventEmitter = require('events');
 const myhttp = require('./http');
 
 
