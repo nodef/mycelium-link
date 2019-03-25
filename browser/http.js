@@ -216,6 +216,7 @@ ClientRequest.prototype.write = write;
 
 
 function ServerResponse(connection, options, id) {
+  EventEmitter.call(this);
   var details = responseDetails(options);
   var {httpVersion, statusCode, statusMessage, headers} = details;
   this.onclose = null;
@@ -233,6 +234,7 @@ function ServerResponse(connection, options, id) {
   this.trailers = {};
   this.id = id;
 };
+ServerResponse.prototype = new EventEmitter();
 ServerResponse.prototype.addTrailers = addTrailers;
 ServerResponse.prototype.end = end;
 ServerResponse.prototype.getHeader = getHeader;
