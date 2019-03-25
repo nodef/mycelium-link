@@ -1,3 +1,7 @@
+const EventEmitter = require('events');
+
+
+
 // reference: https://github.com/substack/http-browserify/blob/master/index.js
 const STATUS_CODES = {
   100 : 'Continue',
@@ -178,6 +182,7 @@ function addTrailers(headers) {
 // NOTE: somehow capture oncontinue and pass to request object
 // what about onresponse?
 function ClientRequest(connection, options, id) {
+  EventEmitter.call(this);
   var details = requestDetails(options);
   var {method, path, httpVersion, headers} = details;
   this.onabort = null;
@@ -202,6 +207,7 @@ function ClientRequest(connection, options, id) {
   this.headersSent = false;
   this.id = id;
 };
+ClientRequest.prototype = new EventEmitter();
 ClientRequest.prototype.abort = abort;
 ClientRequest.prototype.end = end;
 ClientRequest.prototype.flushHeaders = flushHeaders;
