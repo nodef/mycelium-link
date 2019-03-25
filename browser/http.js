@@ -119,7 +119,6 @@ function writeHead(statusCode, statusMessage, headers) {
   Object.assign(this.headers, headers);
 };
 
-// NOTE: somehow capture oncontinue and pass to request object
 function writeContinue() {
   this.writeHead(100);
 };
@@ -176,6 +175,7 @@ function addTrailers(headers) {
 
 
 
+// NOTE: somehow capture oncontinue and pass to request object
 // what about onresponse?
 function ClientRequest(connection, options, id) {
   var details = requestDetails(options);
