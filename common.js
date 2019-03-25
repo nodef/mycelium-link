@@ -42,6 +42,11 @@ function onHttp(head, body) {
   else onHttpRequest.call(this, head, body);
 };
 
+function begin(id, request) {
+  this.streams.set(id, {request});
+  this.requests.add(id);
+};
+
 function end(id) {
   if(this.requests.has(id)) return;
   this.streams.delete(id);

@@ -272,8 +272,9 @@ function IncomingMessage(connection, options, id) {
 
 
 function requestInternal(connection, options, callback) {
-  var request = new ClientRequest(connection, options, Math.random());
+  var id = Math.random(), request = new ClientRequest(connection, options, id);
   if(callback) request.on('response', callback);
+  connection.begin(id, request);
   return request;
 };
 
