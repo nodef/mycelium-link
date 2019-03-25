@@ -120,11 +120,11 @@ function writeHead(statusCode, statusMessage, headers) {
 };
 
 function writeContinue() {
-  this.writeHead(100, 'Continue');
+  this.writeHead(100);
 };
 
 function writeProcessing() {
-  this.writeHead(102, 'Processing');
+  this.writeHead(102);
 };
 
 function flushHeaders() {
