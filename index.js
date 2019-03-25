@@ -16,24 +16,13 @@ function messageStringify(head, body) {
 
 
 
-function Link(address, options) {
-  var o = options||{};
-  var socket = new WebSocket(address, options);
-  // headers
-  // httpVersion
-  // method
-  // rawHeaders
-  // rawTrailers
-  // statusCode
-  // statusMessage
-  // trailers
-  // url
-  // 
+
+
+function MyceliumLinkServer(options, callback) {
+  WebSocket.Server.call(this, options, callback);
+  this.on('connection', (ws) => {
+    ws.on('message', (data) => onMessage.call(this, data));
+    // emit some events here...
+  });
 };
-
-
-var msg1 = messageStringify({type: 'http.post', source: '127.0.0.1:64123', target: '?'}, 'Hey!');
-console.log('msg1:', msg1);
-var {head, body} = messageParse(msg1);
-console.log('head:', head);
-console.log('body:', body);
+MyceliumLinkServer.prototype = new WebSocket.Server();

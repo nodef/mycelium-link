@@ -64,7 +64,7 @@ function requestDetails(options) {
   var o = options||{};
   var method = o.method||'GET';
   var path = o.path||'/';
-  var httpVersion = '1.1';
+  var httpVersion = o.httpVersion||'1.1';
   var headers = o.headers||{};
   headers['host'] = (o.hostname||o.host||'localhost')+(o.port? ':'+o.port:'');
   if(o.auth) headers['authorization'] = 'Basic '+btoa(o.auth);
@@ -85,7 +85,7 @@ function incomingDetails(options) {
   var httpVersion = o.httpVersion||'1.1';
   var method = o.method||null;
   var statusCode = o.statusCode||0;
-  var statusMessage = statusCode? o.statusMessage||STATUS_CODES[statusCode]:null;
+  var statusMessage = statusCode? o.statusMessage||STATUS_CODES[statusCode] : null;
   var path = o.path||'/';
   var headers = o.headers||{};
   return {httpVersion, method, statusCode, statusMessage, path, headers};
