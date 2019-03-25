@@ -17,9 +17,9 @@ function onHttpResponse(head, body) {
     else if(statusCode===101) request.emit('upgrade', response);
     else if(statusCode>=100 && statusCode<200) request.emit('information', response);
   }
-  if(body && response.ondata) response.ondata(body);
-  if(type==='http-') {
-    if(response.onend) response.onend();
+  if(body) response.emit('data', body);
+  if(type==='http-') { // use this.connection.end()
+    response.emit('end');
     this.requests.delete(id);
     this.streams.delete(id);
   }
