@@ -103,11 +103,9 @@ function abort() {
 };
 
 function writeInternal(head, body, callback) {
-  var {id, type} = head;
   if(this.aborted || this.finished) return false;
   if(this.sendDate) this.headers['date'] = (new Date()).toUTCString();
   this.connection.write(head, body, callback);
-  if(type==='http-') { this.connection.end(id); this.finished = true; }
   return this.headersSent = true;
 };
 
@@ -139,6 +137,7 @@ function endInternal(body, callback) {
   var {id, details, trailers} = this;
   if(!this.headersSent) writeInternal.call(this, {id, type: 'http+', details});
   writeInternal.call(this, {id, type: 'http-', details: {trailers}}, body, callback);
+  this.connection.end(id); this.finished = true; this.emit('finish');
   return this;
 };
 
@@ -219,8 +218,6 @@ function ServerResponse(connection, options, id) {
   EventEmitter.call(this);
   var details = responseDetails(options);
   var {httpVersion, statusCode, statusMessage, headers} = details;
-  this.onclose = null;
-  this.onfinish = null;
   this.finished = false;
   this.headersSent = false;
   this.sendDate = true;
