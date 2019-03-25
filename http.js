@@ -178,17 +178,10 @@ function addTrailers(headers) {
 
 
 
-// NOTE: somehow capture oncontinue and pass to request object
-// what about onresponse?
 function ClientRequest(connection, options, id) {
   EventEmitter.call(this);
   var details = requestDetails(options);
   var {method, path, httpVersion, headers} = details;
-  this.onconnect = null;
-  this.oncontinue = null;
-  this.oninformation = null;
-  this.onresponse = null;
-  this.onupgrade = null;
   this.aborted = false;
   this.finished = false;
   this.maxHeadersCount = 2000;

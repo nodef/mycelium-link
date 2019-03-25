@@ -9,9 +9,13 @@ function onHttpResponse(head, body) {
   var stream = this.streams.get(id);
   var {request, response} = stream;
   if(type==='http+') {
+    var {statusCode} = details;
     response = stream.response = new myhttp.IncomingMessage(this, details, id);
     request.emit('response', response);
-    if()
+    if(request.method==='CONNECT') request.emit('connect', response);
+    if(statusCode===100) request.emit('continue', response);
+    else if(statusCode===101) request.emit('upgrade', response);
+    else if(statusCode>=100 && statusCode<200) request.emit('information', response);
   }
   if(body && response.ondata) response.ondata(body);
   if(type==='http-') {
