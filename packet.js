@@ -1,3 +1,4 @@
+// NOTE: can first arg be called type?
 function parse(msg) {
   var protocol = msg.substring(0, 4).trimEnd();
   var size = parseInt(msg.substring(4, 8), 16);
