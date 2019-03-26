@@ -1,21 +1,7 @@
 const WebSocket = WebSocket||require('ws');
 const EventEmitter = require('events');
 const myhttp = require('./http');
-
-
-
-function messageParse(msg) {
-  var len = parseInt(msg.substring(0, 8), 16);
-  var head = JSON.parse(msg.substring(8, 8+len));
-  var body = msg.substring(8+len);
-  return {head, body};
-};
-
-function messageStringify(head, body) {
-  var headStr = JSON.stringify(head);
-  var lenStr = headStr.length.toString(16).padStart(8, '0');
-  return lenStr+headStr+(body||'');
-};
+const mypkt = require('./packet');
 
 
 
@@ -76,7 +62,7 @@ function MyceliumLink(url, protocols) {
   ws.onopen = (event) => this.onopen? this.onopen(event):null;
   ws.onclose = (event) => this.onclose? this.onclose(event):null;
   ws.onmessage = (event) => {
-    var {head, body} = messageParse(event.data);
+    var {head, body} = mypkt.parse(event.data);
     var {type} = head;
     if(/^http/.test(type)) onHttp.call(this, head, body);
   };
@@ -95,7 +81,7 @@ MyceliumLink.prototype.http = http;
 
 /* TEST */
 function write(head, body, callback) {
-  var message = messageStringify(head, body);
+  var message = mypkt.stringify(head, body);
   console.log('write:', message);
   if(callback) callback();
 };
