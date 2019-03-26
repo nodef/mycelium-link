@@ -25,13 +25,13 @@ function onHttpResponse(head, body) {
   var {request, response} = stream;
   if(type==='http+') {
     response = stream.response = new myhttp.IncomingMessage(this, details, id);
-    if(request.onresponse) request.onresponse(response);
+    request.emit('response', response);
   }
-  if(body && response.ondata) response.ondata(body);
+  if(body) response.emit('data', body);
   if(type==='http-') {
-    if(response.onend) response.onend();
     this.requests.delete(id);
     this.streams.delete(id);
+    response.emit('end');
   }
 };
 
@@ -41,13 +41,13 @@ function onHttpRequest(head, body) {
     var request = new myhttp.IncomingMessage(this, details, id);
     var response = new myhttp.ServerResponse(this, details, id);
     this.streams.set(id, {request, response});
-    if(this.onhttp) this.onhttp(request, response);
+    this.emit('http', request, response);
   }
   else {
     var {request, response} = this.streams.get(id);
   }
-  if(body && request.ondata) request.ondata(body);
-  if(type==='http-' && request.onend) request.onend();
+  if(body) request.emit('data', body);
+  if(type==='http-') request.emit('end');
 };
 
 function onHttp(head, body) {
@@ -55,6 +55,8 @@ function onHttp(head, body) {
   if(this.requests.has(id)) onHttpResponse.call(this, head, body);
   else onHttpRequest.call(this, head, body);
 };
+
+
 
 function end(id) {
   if(this.requests.has(id)) return;
