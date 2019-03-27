@@ -24,46 +24,43 @@ function sendInternal(msg, port, address, callback) {
 
 
 
-class DgramSocket extends EventEmitter {
-  constructor(options, callback, connection) {
-    super();
-    this.connection = connection;
-    connection.dgrams = connection.dgrams||new Map();
-    if(callback) this.on('message', callback);
-  }
-  address() {
-    return urlParse(this.url);
-  }
-  close(callback) {
-    var {dgrams} = this.connection;
-    if(this.url!=null) dgrams.delete(this.url);
-    this.url = null;
-    if(callback) callback();
-    this.emit('close');
-  }
-  bind(options, callback) {
-    var {dgrams} = this.connection;
-    var url = urlStringify(options);
-    var err = dgrams.has(url)? `Can't bind to already bound address: ${url}`:null;
-    if(err) return this.emit('error', new Error(err));
-    dgrams.set(this.url = url, this);
-    if(callback) callback();
-    this.emit('listening');
-  }
-  send(msg, offset, length, port, address, callback) {
-    if(arguments.length<=4) sendInternal.call(toString(msg), offset, length, port);
-    else sendInternal.call(toString(msg, offset, offset+length), port, address, callback);
-  }
-}
 
 
 
-function Dgram(connection) {
+function dgram(connection) {
 
-  function Socket(options, callback) {
-    return DgramSocket(options, callback, connection);
+  class Socket extends EventEmitter {
+    constructor(options, callback) {
+      super();
+      this.connection = connection;
+      connection.dgrams = connection.dgrams||new Map();
+      if(callback) this.on('message', callback);
+    }
+    address() {
+      return urlParse(this.url);
+    }
+    close(callback) {
+      var {dgrams} = this.connection;
+      if(this.url!=null) dgrams.delete(this.url);
+      this.url = null;
+      if(callback) callback();
+      this.emit('close');
+    }
+    bind(options, callback) {
+      var {dgrams} = this.connection;
+      var url = urlStringify(options);
+      var err = dgrams.has(url)? `Can't bind to already bound address: ${url}`:null;
+      if(err) return this.emit('error', new Error(err));
+      dgrams.set(this.url = url, this);
+      if(callback) callback();
+      this.emit('listening');
+    }
+    send(msg, offset, length, port, address, callback) {
+      if(arguments.length<=4) sendInternal.call(this, toString(msg), offset, length, port);
+      else sendInternal.call(this, toString(msg, offset, offset+length), port, address, callback);
+    }
   }
-
+  
   function createSocket(type, callback) {
     var options = typeof type==='object'? type : {type};
     return new Socket(options, callback, connection);
@@ -80,4 +77,4 @@ function Dgram(connection) {
 
   return {Socket, createSocket, handleMessage};
 }
-module.exports = Dgram;
+module.exports = dgram;
