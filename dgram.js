@@ -1,6 +1,15 @@
 const EventEmitter = require('events');
 
 
+protocol://[host]:port/path
+function addressParse(url) {
+  var isIPv4 = url.includes('.');
+  var family = isIPv4? 'IPv4':'IPv6';
+  var hostname = url.replace(/.*?\/\//, '').replace(/\/.*/, '');
+  var portStr = hostname.substring((hostname.lastIndexOf(':')+1)||hostname.length);
+  var port = portStr.includes(']')||(hostname.includes(':') && 
+  var port = /\[|\./.test(hostname)? parseInt(hostname.substring(hostname.lastIndexOf(':')+1)):0;
+};
 
 function Socket() {
   EventEmitter.call(this);
@@ -10,38 +19,48 @@ function Socket() {
   this.emit('message');
 };
 Socket.prototype = new EventEmitter();
-Socket.prototype.addMembership = addMembership;
 Socket.prototype.address = address;
 Socket.prototype.bind = bind;
 Socket.prototype.close = close;
-Socket.prototype.dropMembership = dropMembership;
-Socket.prototype.getRecvBufferSize = getRecvBufferSize;
-Socket.prototype.getSendBufferSize = getSendBufferSize;
 Socket.prototype.send = send;
-Socket.prototype.setBroadcast = setBroadcast;
-Socket.prototype.setMulticastInterface = setMulticastInterface;
-Socket.prototype.setMulticastLoopback = setMulticastLoopback;
-Socket.prototype.setMulticastTTL = setMulticastTTL;
-Socket.prototype.setRecvBufferSize = setRecvBufferSize;
-Socket.prototype.setSendBufferSize = setSendBufferSize;
+
+
+
+function toString(msg, start, end) {
+  var start = start||0, end = end||msg.length;
+  if(typeof msg==='string') return msg.substring(start, end);
+  if(Array.isArray(msg)) return String.fromCharCode.apply(null, msg.slice(start, end));
+  if(msg instanceof Uint8Array) return new TextDecoder('utf-8').decode(msg.subarray(start, end));
+  return msg.toString(start, end);
+};
+
+function sendInternal(msg, port, address, callback) {
+  var source = this.address(), target = {port, address};
+  this.connection.send('dgram', {source, target}, msg, callback);
+};
+
 
 
 class Socket extends EventEmitter {
   constructor(options, callback) {
     super();
     var o = options||{};
-    this.type = o.type||'udp4';
-    this.reuseAddr = o.reuseAddr||false;
-    this.ipv6Only = o.ipv6Only||false;
-    this.recvBufferSize = o.recvBufferSize||0;
-    this.sendBufferSize = o.sendBufferSize||0;
-    this.lookup = o.lookup||null;
+    this.address = {family: o.type};
     if(callback) this.on('message', callback);
   }
-
-  setTTL() {}
-  unref() {}
-  ref() {}
+  address() {
+    return this.address;
+  }
+  close() {
+    this.connection.unbind();
+  }
+  bind(options, callback) {
+    this.connection.bind(options, callback);
+  }
+  send(msg, offset, length, port, address, callback) {
+    if(arguments.length<=4) sendInternal.call(toString(msg), offset, length, port);
+    else sendInternal.call(toString(msg, offset, offset+length), port, address, callback);
+  }
 }
 
 
@@ -51,6 +70,12 @@ function createSocket(type, callback) {
   return new this.Socket(options, callback);
 };
 
+function handleMessage(head, body) {
+  var {dgrams} = this.connection;
+  var {source, target} = head;
+  var socket = dgrams.get(target)||dgrams.get(null);
+  socket.emit('message', body, {});
+};
 
 
 exports.Socket = Socket;
