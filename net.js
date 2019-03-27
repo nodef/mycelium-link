@@ -108,9 +108,16 @@ function isIPv4() {
 };
 
 function isIPv6() {
-  
+
 };
 
 
 
 exports.Server = Server;
+exports.Socket = Socket;
+exports.connect = connect;
+exports.createConnection = createConnection;
+exports.createServer = createServer;
+exports.isIP = isIP;
+exports.isIPv4 = isIPv4;
+exports.isIPv6 = isIPv6;
