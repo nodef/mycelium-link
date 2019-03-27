@@ -27,6 +27,7 @@ function sendInternal(msg, port, address, callback) {
 class Socket extends EventEmitter {
   constructor(options, callback) {
     super();
+    // init connection
     if(callback) this.on('message', callback);
   }
   address() {
