@@ -41,7 +41,7 @@ Server.prototype.shouldHandle = shouldHandle(request);
 
 
 class Server extends EventEmitter {
-  constructor() {
+  constructor(options, callback) {
     super();
   }
 }

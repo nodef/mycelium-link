@@ -4,7 +4,8 @@ const {toString} = require('./util');
 
 
 function urlStringify(options) {
-  var {address, port} = options||{};
+  var {address, port, url} = options||{};
+  if(url!=null) return url;
   return address||port? `dgram://${address||''}:${port||'0'}`:'';
 };
 
