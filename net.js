@@ -49,4 +49,68 @@ Server.prototype.listen = listen;
 
 
 
+function Socket(options) {
+  EventEmitter.call(this);
+  // on-close(hadError)
+  // on-connect
+  // on-data(data)
+  // on-drain
+  // on-end
+  // on-error(err)
+  // on-lookup(err, address, family, host)
+  // on-ready
+  // on-timeout
+  this.bufferSize = 0;
+  this.bytesRead = 0;
+  this.connecting = false;
+  this.destroyed = false;
+  this.localAddress = '';
+  this.localPort = 0;
+  this.pending = false;
+  this.remoteAddress = '';
+  this.remoteFamily = 'IPv4';
+  this.remotePort = 0;
+};
+Socket.prototype = new EventEmitter();
+Socket.prototype.close = close;
+Socket.prototype.address = address;
+Socket.prototype.connect = connect;
+Socket.prototype.destroy = destroy;
+Socket.prototype.end = end;
+Socket.prototype.pause = pause;
+Socket.prototype.resume = resume;
+Socket.prototype.setEncoding = setEncoding;
+Socket.prototype.setKeepAlive = setKeepAlive;
+Socket.prototype.setNoDelay = setNoDelay;
+Socket.prototype.setTimeout = setTimeout;
+Socket.prototype.write = write;
+
+
+
+function connect() {
+
+};
+
+function createConnection() {
+
+};
+
+function createServer() {
+
+};
+
+function isIP() {
+
+};
+
+function isIPv4() {
+
+};
+
+function isIPv6() {
+  
+};
+
+
+
 exports.Server = Server;
