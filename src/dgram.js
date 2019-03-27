@@ -3,11 +3,6 @@ const {toString} = require('./util');
 
 
 
-function sendInternal(msg, port, address, callback) {
-  var source = this.address(), target = {port, address};
-  this.connection.send('dgram', {source, target}, msg, callback);
-};
-
 function urlStringify(options) {
   var {address, port} = options||{};
   return address||port? `dgram://${address||''}:${port||'0'}`:'';
@@ -19,6 +14,11 @@ function urlParse(url) {
   var family = o.host.includes('.')? 'IPv4':'IPv6';
   var address = o.host, port = parseInt(o.port||'0');
   return {family, address, port, url};
+};
+
+function sendInternal(msg, port, address, callback) {
+  var source = this.address(), target = {port, address};
+  this.connection.send('dgram', {source, target}, msg, callback);
 };
 
 

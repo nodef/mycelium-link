@@ -21,11 +21,11 @@ Socket.CONNECTING = 0;
 Socket.OPEN = 1;
 Socket.CLOSING = 2;
 Socket.CLOSED = 3;
-Socket.prototype.close = close(code, reason);
-Socket.prototype.send = send(data);
+// Socket.prototype.close = close(code, reason);
+// Socket.prototype.send = send(data);
 
 
-
+/*
 function Server(options, callback) {
   EventEmitter.call(this);
   this.emit('close');
@@ -37,6 +37,15 @@ function Server(options, callback) {
 Server.prototype.close = close(callback);
 Server.prototype.handleUpgrade = handleUpgrade(request, socket, head, callback);
 Server.prototype.shouldHandle = shouldHandle(request);
+*/
+
+
+class Server extends EventEmitter {
+  constructor() {
+    super();
+  }
+}
+
 
 
 
