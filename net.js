@@ -9,6 +9,23 @@ function address() {
   return {port, family, address};
 };
 
+function close(callback) {
+  // NOTE: remove the port bound
+  this.emit('close');
+  if(callback) callback();
+  return this;
+};
+
+function getConnections(callback) {
+  var err = null, count = this.connections.length;
+  if(callback) callback(err, count);
+  return this;
+};
+
+function listen() {
+
+};
+
 
 
 function Server(options, connectionListener) {
@@ -20,8 +37,15 @@ function Server(options, connectionListener) {
   // - close
   // - listening
   // - connection
+  this.connections = []; // current connections to server
+  this.listening = false;
+  this.maxConnections = 0;
 };
 Server.prototype = new EventEmitter();
+Server.prototype.address = address;
+Server.prototype.close = close;
+Server.prototype.getConnections = getConnections;
+Server.prototype.listen = listen;
 
 
 
