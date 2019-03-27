@@ -7,7 +7,7 @@ function urlStringify(options) {
   var {address, port, url} = options||{};
   if(url!=null) return url;
   return address||port? `dgram://${address||''}:${port||'0'}`:'';
-};
+}
 
 function urlParse(url) {
   if(!url) return {family: 'IP', address: '', port: 0, url};
@@ -15,19 +15,20 @@ function urlParse(url) {
   var family = o.host.includes('.')? 'IPv4':'IPv6';
   var address = o.host, port = parseInt(o.port||'0');
   return {family, address, port, url};
-};
+}
 
 function sendInternal(msg, port, address, callback) {
   var source = this.address(), target = {port, address};
   this.connection.send('dgram', {source, target}, msg, callback);
-};
+}
 
 
 
-class Socket extends EventEmitter {
-  constructor(options, callback) {
+class DgramSocket extends EventEmitter {
+  constructor(options, callback, connection) {
     super();
-    // init connection
+    this.connection = connection;
+    connection.dgrams = connection.dgrams||new Map();
     if(callback) this.on('message', callback);
   }
   address() {
@@ -57,22 +58,26 @@ class Socket extends EventEmitter {
 
 
 
-function createSocket(type, callback) {
-  var options = typeof type==='object'? type : {type};
-  return new this.Socket(options, callback);
-};
+function Dgram(connection) {
 
-function handleMessage(head, body) {
-  var {dgrams} = this.connection;
-  var {source, target} = head;
-  var socket = dgrams.get(target)||dgrams.get('');
-  if(socket) return socket.emit('message', body, urlParse(source));
-  var err = 'No matching dgram socket to handle message: '+JSON.stringify({head, body}, null, 2);
-  this.connection.emit('error', new Error(err));
-};
+  function Socket(options, callback) {
+    return DgramSocket(options, callback, connection);
+  }
 
+  function createSocket(type, callback) {
+    var options = typeof type==='object'? type : {type};
+    return new Socket(options, callback, connection);
+  }
 
+  function handleMessage(head, body) {
+    var {dgrams} = connection;
+    var {source, target} = head;
+    var socket = dgrams.get(target)||dgrams.get('');
+    if(socket) return socket.emit('message', body, urlParse(source));
+    var err = 'No matching dgram socket to handle message: '+JSON.stringify({head, body}, null, 2);
+    this.connection.emit('error', new Error(err));
+  }
 
-exports.Socket = Socket;
-exports.createSocket = createSocket;
-exports.handleMessage = handleMessage;
+  return {Socket, createSocket, handleMessage};
+}
+module.exports = Dgram;

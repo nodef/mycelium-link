@@ -1,7 +1,6 @@
 if(typeof WebSocket==='undefined') WebSocket = require('ws');
 const EventEmitter = require('events');
-const mypkt = require('./packet');
-// NOTE: this can be provided here
+const Dgram = require('./dgram');
 
 
 
@@ -63,6 +62,8 @@ class Socket extends EventEmitter {
     this.onclose = null;
     this.onopen = null;
     this.onmessage = null;
+    this.dgram = Dgram(this);
+    var s = this.dgram.Socket();
     this.on('error', (err) => this.onerror? this.onerror(err):null);
     this.on('close', () => this.onclose? this.onclose():null);
     this.on('open', () => this.onopen? this.onopen():null);
@@ -70,6 +71,7 @@ class Socket extends EventEmitter {
   }
   send(protocol, head, body, callback) {
     this.socket.send(messageStringify(protocol, head, body));
+    if(callback) callback();
   }
 }
 
