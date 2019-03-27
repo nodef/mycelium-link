@@ -22,6 +22,7 @@ function MyceliumLink(url, protocols) {
     var {head, body} = mypkt.parse(event.data);
     var {protocol} = head;
     if(protocol==='http') this.http(head, body);
+    else console.error('message with unknown protocol:', protocol);
   };
   this.socket = ws;
   this.onerror = null;
