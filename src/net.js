@@ -49,6 +49,14 @@ Server.prototype.listen = listen;
 
 
 
+
+class Server extends EventEmitter {
+
+}
+
+
+
+
 function Socket(options) {
   EventEmitter.call(this);
   // on-close(hadError)
