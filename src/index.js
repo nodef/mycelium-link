@@ -63,6 +63,8 @@ class Socket extends EventEmitter {
     this.onopen = null;
     this.onmessage = null;
     this.dgram = dgram(this);
+    var a = new this.dgram.Socket();
+    a.bind({address: '127.0.0.1', port: 2000});
     this.on('error', (err) => this.onerror? this.onerror(err):null);
     this.on('close', () => this.onclose? this.onclose():null);
     this.on('open', () => this.onopen? this.onopen():null);
